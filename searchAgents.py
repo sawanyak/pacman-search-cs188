@@ -360,8 +360,27 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    position, visitedCorners = state
+    unvisited = [c for i, c in enumerate(corners) if not visitedCorners[i]]
+
+    if not unvisited:
+        return 0
+
+    # Try every permutation of unvisited corners and return the minimum
+    # total Manhattan distance (current → c1 → c2 → …). This is an exact
+    # solution to the relaxed (wall-free) TSP, so it is admissible and
+    # consistent.
+    from itertools import permutations
+    minCost = float('inf')
+    for perm in permutations(unvisited):
+        cost = 0
+        cur = position
+        for c in perm:
+            cost += abs(cur[0] - c[0]) + abs(cur[1] - c[1])
+            cur = c
+        if cost < minCost:
+            minCost = cost
+    return minCost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
