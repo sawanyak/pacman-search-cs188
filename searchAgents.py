@@ -483,8 +483,24 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodList = foodGrid.asList()          # list of (x, y) coords of remaining dots
+
+    # No food left -> we're at a goal -> heuristic must be 0.
+    if not foodList:
+        return 0
+
+    gameState = problem.startingGameState  # walls are fixed, so any game state works
+    cache = problem.heuristicInfo          # reuse distances across heuristic calls
+
+    def dist(a, b):
+        # Cache maze distances (each one runs a BFS, so this saves a lot of time).
+        key = (a, b) if a <= b else (b, a)
+        if key not in cache:
+            cache[key] = mazeDistance(a, b, gameState)
+        return cache[key]
+
+    # Heuristic = real maze distance from Pacman to the FARTHEST remaining dot.
+    return max(dist(position, food) for food in foodList)
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
